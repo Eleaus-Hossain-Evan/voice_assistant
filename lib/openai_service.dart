@@ -107,6 +107,40 @@ class OpenAIService {
   }
 
   Future<String> dallEAPI(String prompt) async {
-    return Future.value("Dall-E");
+    log("********** Dall-E API || open **********");
+    messages.add({
+      "role": "user",
+      "content": prompt,
+    });
+
+    try {
+      print(prompt);
+      final response = await client.post(
+        Uri.parse('https://api.openai.com/v1/images/generations'),
+        headers: headers,
+        body: jsonEncode(
+          {"prompt": prompt, "n": 1, "size": "1024x1024"},
+        ),
+      );
+
+      print('response: ${response.statusCode}');
+      print('response: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final imageUrl = jsonDecode(response.body)['data'][0]['url'];
+
+        messages.add({
+          "role": "assistant",
+          "content": imageUrl,
+        });
+        log("********** Dall-E API || end **********");
+        return imageUrl;
+      } else {
+        log("********** Dall-E API  || end **********");
+        return (response.statusCode.toString());
+      }
+    } catch (e) {
+      return e.toString();
+    }
   }
 }
